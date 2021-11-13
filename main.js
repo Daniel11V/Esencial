@@ -27,8 +27,8 @@ const loadProducts = () => {
 
         productsContainer.innerHTML += `
         <div class="col-4 col-12-medium" id="product-${i}">
-            <section class="box feature" style="border-radius: 10px;">
-                <a href="#" class="image featured" style="border-top-left-radius: 10px;border-top-right-radius: 10px;border: 4px solid #ffffff;border-bottom: 4px solid #afafaf">
+            <section class="box feature" style="border-radius: 10px;position:relative;">
+                <a href="#" class="image featured product-img">
                     <img src="${products[i].imgUrl}" alt="${products[i].name}" />
                 </a>
                 <div class="inner" style="display:flex;justify-content:space-between;">
@@ -36,8 +36,14 @@ const loadProducts = () => {
                         <h2>${products[i].name}</h2>
                         <p>Stock: ${products[i].quantity}</p>
                     </header>
-                    <p style="font-size: 1.5em">$${products[i].price}</p>
+                    <div style="display: flex;flex-direction: column;align-items:end">
+                        <span style="font-size: 1.5em;line-height:1em">$${products[i].price}</span>
+                        <a href="javascript:addProductToCart(${i})"
+                class="fas fa-cart-plus cart-button"></a>
+                    </div>
                 </div>
+                <a href="javascript:deleteProduct(${i})"
+                class="icon fas fa-times-circle delete-button"></a>
             </section>
         </div>`;
 
@@ -81,4 +87,125 @@ const nextInput = () => {
             console.log("Paso Error");
     }
 
+}
+
+const deleteProduct = (id) => {
+    products.slice(id, 1);
+    document.getElementById("product-" + id).remove();
+}
+
+const addProductToCart = (productId) => {
+
+    let invalid, chosenQuantity;
+
+    do {
+        chosenQuantity = parseInt(prompt(`Indique cantidad deseada de ${products[productId].name} (${products[productId].quantity} disponibles):`));
+        invalid = (chosenQuantity > products[productId].quantity);
+    } while (invalid);
+
+    if (chosenQuantity > 0) {
+        if (confirm(`Se añadiran ${chosenQuantity} ${products[productId].name} al carrito.`)) {
+
+            // Añadir al Carrito
+            const indextProductInCart = cart.findIndex(product => product.name === products[productId].name);
+            if (indextProductInCart === -1) {
+                cart.push(new Product(
+                    products[productId].name,
+                    products[productId].price,
+                    chosenQuantity,
+                    products[productId].imgUrl
+                ));
+            } else {
+                cart[indextProductInCart].quantity += chosenQuantity;
+            }
+
+            // Bajar cantidad disponible
+            products[productId].quantity -= chosenQuantity;
+            if (!products[productId].quantity) {
+                products.splice(productId, 1);
+            }
+
+            loadProducts();
+            loadCart();
+        }
+    }
+}
+
+const deleteProductFromCart = (productId) => {
+
+    let chosenQuantity, invalid;
+
+    do {
+        chosenQuantity = parseInt(prompt(`Indique cuantas ${cart[productId].name} quitar (${cart[productId].quantity} en el carrito):`));
+        invalid = (chosenQuantity > cart[productId].quantity);
+    } while (invalid);
+
+    if (chosenQuantity > 0) {
+        if (confirm(`Se quitaran ${chosenQuantity} ${cart[productId].name} del carrito.`)) {
+
+            // Subir cantidad disponible
+            const indextProductInProducts = products.findIndex(product => product.name === cart[productId].name);
+            console.log(indextProductInProducts);
+            if (indextProductInProducts == -1) {
+                products.push(new Product(
+                    cart[productId].name,
+                    cart[productId].price,
+                    chosenQuantity,
+                    cart[productId].imgUrl
+                ));
+            } else {
+                products[indextProductInProducts].quantity += chosenQuantity;
+            }
+
+            // Quitar del Carrito
+            cart[productId].quantity -= chosenQuantity;
+            if (!cart[productId].quantity) {
+                cart.splice(productId, 1);
+            }
+
+            loadProducts();
+            loadCart();
+        }
+    }
+}
+
+const loadCart = () => {
+
+    let totalPrice = 0;
+
+    const cartContainer = document.getElementById("cart");
+    cartContainer.innerHTML = "";
+
+    for (let i = 0; i < cart.length; i++) {
+
+        totalPrice += (cart[i].price * cart[i].quantity);
+
+        cartContainer.innerHTML += `
+        <div class="col-6" id="product-cart-${i}">
+            <a href="javascript:deleteProductFromCart(${i})" class="image fit" style="position:relative;height: 5em;">
+                <img src="${cart[i].imgUrl}" alt="${cart[i].name}" />
+                <div id="product-cart-text">
+                    <p>${cart[i].name}</p>
+                    <span>$${cart[i].price}</span>
+                    <span>x${cart[i].quantity}</span>
+                    <i id="delete-cart-button" class="far fa-minus-square"></i>
+                </div>
+            </a>
+        </div>`;
+
+    }
+
+    document.getElementById("cart-total").innerHTML = "TOTAL: $" + totalPrice;
+}
+
+const performPurchase = () => {
+    cart.splice(0, cart.length);
+    // cart = [];
+
+    // for(let i = 0; i < cart.length; i++) {
+    // }
+
+    alert("Felicidades, a realizado su compra con exito!");
+
+    loadCart();
 }

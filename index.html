@@ -13,7 +13,7 @@
 	<link rel="stylesheet" href="assets/css/main.css" />
 </head>
 
-<body class="is-preload homepage" onload="loadProducts();">
+<body class="is-preload homepage" onload="loadProducts();loadCart();">
 	<div id="page-wrapper">
 
 		<!-- Header -->
@@ -105,9 +105,10 @@
 						<!-- Sidebar -->
 						<div id="sidebar">
 							<section class="widget thumbnails">
-								<h3>Interesting stuff</h3>
+								<h3>Previsualizar Compra</h3>
 								<div class="grid">
-									<div class="row gtr-50">
+									<div class="row gtr-50" id="cart">
+										<!-- Cart Products -->
 										<div class="col-6"><a href="#" class="image fit"><img src="images/pic04.jpg"
 													alt="" /></a></div>
 										<div class="col-6"><a href="#" class="image fit"><img src="images/pic05.jpg"
@@ -118,7 +119,8 @@
 													alt="" /></a></div>
 									</div>
 								</div>
-								<a href="#" class="button icon fa-file-alt">Ver Más</a>
+								<a href="javascript:void(0)" class="button icon fa-file-alt" id="cart-total"
+									style="cursor: default;">TOTAL: $0</a>
 							</section>
 						</div>
 
@@ -129,17 +131,12 @@
 						<div id="content">
 							<section class="last">
 								<h2>Tu Carrito</h2>
-								<p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Architecto error ullam sequi
-									blanditiis sed, sapiente quibusdam dolor pariatur repellendus optio quidem in
-									facilis hic recusandae exercitationem sint provident fugit cupiditate?</p>
-								<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras tempus tortor vitae
-									ligula finibus, sollicitudin scelerisque nisl varius. Donec fringilla vel urna sed
-									lacinia. Fusce vitae hendrerit metus. Sed hendrerit lacus a placerat scelerisque.
-									Quisque dui nibh, scelerisque vel hendrerit sit amet, consectetur et elit. Maecenas
-									auctor nulla vel lorem condimentum facilisis. Aenean quis quam vulputate, fermentum
-									ligula eget.
-								</p>
-								<a href="#" class="button icon solid fa-arrow-circle-right">Realizar Compra</a>
+								<p>Muchos detalles de la compra</p>
+								<p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Incidunt ut quibusdam minima
+									nihil ipsam necessitatibus totam quam recusandae nostrum mollitia exercitationem
+									distinctio, possimus id vero laboriosam quasi impedit! Deleniti, cupiditate.</p>
+								<a href="javascript:performPurchase();"
+									class="button icon solid fa-arrow-circle-right">Realizar Compra</a>
 							</section>
 						</div>
 
