@@ -13,7 +13,7 @@
 	<link rel="stylesheet" href="assets/css/main.css" />
 </head>
 
-<body class="is-preload homepage" onload="loadProducts();loadCart();">
+<body class="is-preload homepage">
 	<div id="page-wrapper">
 
 		<!-- Header -->
@@ -68,7 +68,7 @@
 					</div>
 					<div class="col-5 col-12-medium">
 						<ul>
-							<li><a href="javascript:nextInput()"
+							<li><a href="javascript:void(0)" id="nextInput"
 									class="button large icon solid fa-arrow-circle-right">Siguiente</a>
 							</li>
 							<li>
@@ -135,7 +135,7 @@
 								<p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Incidunt ut quibusdam minima
 									nihil ipsam necessitatibus totam quam recusandae nostrum mollitia exercitationem
 									distinctio, possimus id vero laboriosam quasi impedit! Deleniti, cupiditate.</p>
-								<a href="javascript:performPurchase();"
+								<a href="javascript:void(0);" id="performPurchase"
 									class="button icon solid fa-arrow-circle-right">Realizar Compra</a>
 							</section>
 						</div>

@@ -8,17 +8,48 @@ class Product {
     }
 }
 
-const products = [];
-products.push(new Product("Zapatillas", 5500, 5, "https://static0.tiendeo.com.ar/upload_articulos/257825/e3af9bc1-80c2-5be5-8e48-848652227b5f.jpg"));
-products.push(new Product("Remeras", 800, 10, "https://essential.vteximg.com.br/arquivos/ids/305737-1000-1000/266-0710_1.jpg?v=637112560190470000"));
-
-const cart = [];
-
-let inputStep = 0;
+let products = [];
 let newProduct = [];
 
+let cart = [];
+
+let inputStep = 0;
+
+
+const getData = () => {
+
+    // getProducts
+    let productsFromStorage = JSON.parse(localStorage.getItem("products"));
+    console.log("productsFromStorage: ", productsFromStorage);
+
+    if (!productsFromStorage) {
+        productsFromStorage = [
+            new Product("Zapatillas", 5500, 5, "https://static0.tiendeo.com.ar/upload_articulos/257825/e3af9bc1-80c2-5be5-8e48-848652227b5f.jpg"),
+            new Product("Remeras", 800, 10, "https://essential.vteximg.com.br/arquivos/ids/305737-1000-1000/266-0710_1.jpg?v=637112560190470000")
+        ];
+
+        localStorage.setItem("products", JSON.stringify(productsFromStorage));
+        console.log("EnJSON: ", JSON.stringify(productsFromStorage));
+    }
+
+    products = productsFromStorage;
+
+
+    // getCart
+    let cartFromStorage = JSON.parse(localStorage.getItem("cart"));
+
+    if (!cartFromStorage) {
+        cartFromStorage = [];
+
+        localStorage.setItem("cart", JSON.stringify(cartFromStorage));
+    }
+
+    cart = cartFromStorage;
+
+}
 
 const loadProducts = () => {
+
     const productsContainer = document.getElementById("products");
 
     productsContainer.innerHTML = "";
@@ -50,11 +81,6 @@ const loadProducts = () => {
     }
 }
 
-const changeInputDescription = (description, step) => {
-    document.getElementById("textDescription").innerHTML = description;
-    document.getElementById("textStep").innerHTML = `${inputStep + 1}/4`;
-}
-
 const nextInput = () => {
     newProduct.push(document.getElementById("inputProduct").value);
     document.getElementById("inputProduct").value = "";
@@ -65,12 +91,11 @@ const nextInput = () => {
         inputStep = 0;
     }
 
-    console.log(newProduct, inputStep);
-
     switch (inputStep) {
         case 0:
             changeInputDescription("Nombre del producto a agregar");
             products.push(new Product(newProduct[0], newProduct[1], newProduct[2], newProduct[3]));
+            localStorage.setItem("products", JSON.stringify(products));
             newProduct = [];
             loadProducts();
             break;
@@ -86,12 +111,17 @@ const nextInput = () => {
         default:
             console.log("Paso Error");
     }
+}
 
+const changeInputDescription = (description, step) => {
+    document.getElementById("textDescription").innerHTML = description;
+    document.getElementById("textStep").innerHTML = `${inputStep + 1}/4`;
 }
 
 const deleteProduct = (id) => {
-    products.slice(id, 1);
+    products.splice(id, 1);
     document.getElementById("product-" + id).remove();
+    localStorage.setItem("products", JSON.stringify(products));
 }
 
 const addProductToCart = (productId) => {
@@ -127,6 +157,8 @@ const addProductToCart = (productId) => {
 
             loadProducts();
             loadCart();
+            localStorage.setItem("products", JSON.stringify(products));
+            localStorage.setItem("cart", JSON.stringify(cart));
         }
     }
 }
@@ -165,6 +197,8 @@ const deleteProductFromCart = (productId) => {
 
             loadProducts();
             loadCart();
+            localStorage.setItem("products", JSON.stringify(products));
+            localStorage.setItem("cart", JSON.stringify(cart));
         }
     }
 }
@@ -198,14 +232,27 @@ const loadCart = () => {
     document.getElementById("cart-total").innerHTML = "TOTAL: $" + totalPrice;
 }
 
-const performPurchase = () => {
-    cart.splice(0, cart.length);
-    // cart = [];
-
-    // for(let i = 0; i < cart.length; i++) {
-    // }
-
-    alert("Felicidades, a realizado su compra con exito!");
-
+window.onload = () => {
+    getData();
+    loadProducts();
     loadCart();
-}
+
+    // EventListeners
+
+    document.getElementById("nextInput").addEventListener("click", () => nextInput());
+    document.getElementById("inputProduct").addEventListener("keyup", event => {
+        if (event.keyCode === 13) {
+            nextInput();
+        }
+    });
+
+    document.getElementById("performPurchase").addEventListener("click", () => {
+        cart.splice(0, cart.length);
+
+        alert("Felicidades, a realizado su compra con exito!");
+
+        loadCart();
+        localStorage.setItem("cart", JSON.stringify([]));
+    });
+
+};
