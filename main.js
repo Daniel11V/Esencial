@@ -20,7 +20,6 @@ const getData = () => {
 
     // getProducts
     let productsFromStorage = JSON.parse(localStorage.getItem("products"));
-    console.log("productsFromStorage: ", productsFromStorage);
 
     if (!productsFromStorage) {
         productsFromStorage = [
@@ -29,7 +28,6 @@ const getData = () => {
         ];
 
         localStorage.setItem("products", JSON.stringify(productsFromStorage));
-        console.log("EnJSON: ", JSON.stringify(productsFromStorage));
     }
 
     products = productsFromStorage;
@@ -48,18 +46,16 @@ const getData = () => {
 
 }
 
-const loadProducts = () => {
+const loadProducts = (saveInLocalStorage) => {
 
-    const productsContainer = document.getElementById("products");
-
-    productsContainer.innerHTML = "";
+    $("#products").empty();
 
     for (let i = 0; i < products.length; i++) {
 
-        productsContainer.innerHTML += `
+        $("#products").append(`
         <div class="col-4 col-12-medium" id="product-${i}">
             <section class="box feature" style="border-radius: 10px;position:relative;">
-                <a href="#" class="image featured product-img">
+                <a href="javascript:void(0)" class="image featured product-img">
                     <img src="${products[i].imgUrl}" alt="${products[i].name}" />
                 </a>
                 <div class="inner" style="display:flex;justify-content:space-between;">
@@ -69,21 +65,36 @@ const loadProducts = () => {
                     </header>
                     <div style="display: flex;flex-direction: column;align-items:end">
                         <span style="font-size: 1.5em;line-height:1em">$${products[i].price}</span>
-                        <a href="javascript:addProductToCart(${i})"
+                        <a href="javascript:void(0)"
                 class="fas fa-cart-plus cart-button"></a>
                     </div>
                 </div>
-                <a href="javascript:deleteProduct(${i})"
+                <a href="javascript:void(0)"
                 class="icon fas fa-times-circle delete-button"></a>
             </section>
-        </div>`;
+        </div>`);
 
     }
+
+    if (saveInLocalStorage) {
+        localStorage.setItem("products", JSON.stringify(products));
+    }
+
+    //// Product Card Listeners
+    $(".delete-button").click((e) => {
+        const productId = $(e.target).closest(".col-12-medium").attr('id').replace("product-", '');
+        deleteProduct(parseInt(productId));
+    });
+
+    $(".cart-button").click((e) => {
+        const productId = $(e.target).closest(".col-12-medium").attr('id').replace("product-", '');
+        addProductToCart(parseInt(productId));
+    });
 }
 
 const nextInput = () => {
-    newProduct.push(document.getElementById("inputProduct").value);
-    document.getElementById("inputProduct").value = "";
+    newProduct.push($("#inputProduct").val());
+    $("#inputProduct").val("");
 
     if (inputStep < 3) {
         inputStep++;
@@ -95,9 +106,8 @@ const nextInput = () => {
         case 0:
             changeInputDescription("Nombre del producto a agregar");
             products.push(new Product(newProduct[0], newProduct[1], newProduct[2], newProduct[3]));
-            localStorage.setItem("products", JSON.stringify(products));
             newProduct = [];
-            loadProducts();
+            loadProducts(true);
             break;
         case 1:
             changeInputDescription("Precio del producto a agregar");
@@ -113,28 +123,79 @@ const nextInput = () => {
     }
 }
 
-const changeInputDescription = (description, step) => {
-    document.getElementById("textDescription").innerHTML = description;
-    document.getElementById("textStep").innerHTML = `${inputStep + 1}/4`;
+const changeInputDescription = description => {
+    $("#textDescription").text(description);
+    $("#textStep").text(`${inputStep + 1}/4`);
 }
 
-const deleteProduct = (id) => {
-    products.splice(id, 1);
-    document.getElementById("product-" + id).remove();
-    localStorage.setItem("products", JSON.stringify(products));
+const deleteProduct = async (id) => {
+    if (await askWithModal("confirm", `Eliminar el producto ${products[id].name}?`)) {
+        products.splice(id, 1);
+        $("#product-" + id).remove();
+        localStorage.setItem("products", JSON.stringify(products));
+    }
 }
 
-const addProductToCart = (productId) => {
+const askWithModal = (type, description, notFadeIn, notFadeOut) => {
+    $(".modal-window input").val("");
+    let toFocus;
+
+    if (type === "input") {
+        $(".modal-window input").show();
+        $("#modal-btn-cancel").show();
+        $("#modal-btn-confirm").text("Confirmar");
+        toFocus = ".modal-window input";
+    } else if (type === "confirm") {
+        $(".modal-window input").hide();
+        $("#modal-btn-cancel").show();
+        $("#modal-btn-confirm").text("Confirmar");
+        toFocus = "#modal-btn-confirm";
+    } else if (type === "notification") {
+        $(".modal-window input").hide();
+        $("#modal-btn-cancel").hide();
+        $("#modal-btn-confirm").text("Aceptar");
+        toFocus = "#modal-btn-confirm";
+    }
+
+    $(".modal-window h1").text(description);
+    if (!notFadeIn) $(".modal-window").fadeIn(150);
+    $(toFocus).focus();
+
+    return new Promise((res, rej) => {
+
+        // Cancel
+        $("#modal-btn-cancel").unbind().click(() => {
+            $(".modal-window").fadeOut(200);
+
+            res(0);
+        });
+
+        // Confirm
+        const confirmFunction = () => {
+            if (!notFadeOut) $(".modal-window").fadeOut(200);
+
+            if (type === "input") res(parseInt($("#input-modal").val()));
+            if (type === "confirm") res(1);
+        }
+
+        $("#modal-btn-confirm").unbind().click((e) => confirmFunction());
+        $(".modal-window").unbind().keyup(e => { if (e.key === "Enter") confirmFunction() });
+
+    });
+
+}
+
+const addProductToCart = async (productId) => {
 
     let invalid, chosenQuantity;
 
     do {
-        chosenQuantity = parseInt(prompt(`Indique cantidad deseada de ${products[productId].name} (${products[productId].quantity} disponibles):`));
+        chosenQuantity = await askWithModal("input", `Indique cantidad deseada de ${products[productId].name} (${products[productId].quantity} disponibles):`, false, true);
         invalid = (chosenQuantity > products[productId].quantity);
     } while (invalid);
 
     if (chosenQuantity > 0) {
-        if (confirm(`Se añadiran ${chosenQuantity} ${products[productId].name} al carrito.`)) {
+        if (await askWithModal("confirm", `Se añadiran ${chosenQuantity} ${products[productId].name} al carrito.`, true)) {
 
             // Añadir al Carrito
             const indextProductInCart = cart.findIndex(product => product.name === products[productId].name);
@@ -155,29 +216,26 @@ const addProductToCart = (productId) => {
                 products.splice(productId, 1);
             }
 
-            loadProducts();
-            loadCart();
-            localStorage.setItem("products", JSON.stringify(products));
-            localStorage.setItem("cart", JSON.stringify(cart));
+            loadProducts(true);
+            loadCart(true);
         }
     }
 }
 
-const deleteProductFromCart = (productId) => {
+const deleteProductFromCart = async (productId) => {
 
     let chosenQuantity, invalid;
 
     do {
-        chosenQuantity = parseInt(prompt(`Indique cuantas ${cart[productId].name} quitar (${cart[productId].quantity} en el carrito):`));
+        chosenQuantity = await askWithModal("input", `Indique cuantas ${cart[productId].name} quitar (${cart[productId].quantity} en el carrito):`, false, true);
         invalid = (chosenQuantity > cart[productId].quantity);
     } while (invalid);
 
     if (chosenQuantity > 0) {
-        if (confirm(`Se quitaran ${chosenQuantity} ${cart[productId].name} del carrito.`)) {
+        if (await askWithModal("confirm", `Se quitaran ${chosenQuantity} ${cart[productId].name} del carrito.`, true)) {
 
             // Subir cantidad disponible
             const indextProductInProducts = products.findIndex(product => product.name === cart[productId].name);
-            console.log(indextProductInProducts);
             if (indextProductInProducts == -1) {
                 products.push(new Product(
                     cart[productId].name,
@@ -195,28 +253,25 @@ const deleteProductFromCart = (productId) => {
                 cart.splice(productId, 1);
             }
 
-            loadProducts();
-            loadCart();
-            localStorage.setItem("products", JSON.stringify(products));
-            localStorage.setItem("cart", JSON.stringify(cart));
+            loadProducts(true);
+            loadCart(true);
         }
     }
 }
 
-const loadCart = () => {
+const loadCart = (saveInLocalStorage) => {
 
     let totalPrice = 0;
 
-    const cartContainer = document.getElementById("cart");
-    cartContainer.innerHTML = "";
+    $("#cart").empty();
 
     for (let i = 0; i < cart.length; i++) {
 
         totalPrice += (cart[i].price * cart[i].quantity);
 
-        cartContainer.innerHTML += `
+        $("#cart").append(`
         <div class="col-6" id="product-cart-${i}">
-            <a href="javascript:deleteProductFromCart(${i})" class="image fit" style="position:relative;height: 5em;">
+            <a href="javascript:void(0)" class="image fit" style="position:relative;height: 5em;">
                 <img src="${cart[i].imgUrl}" alt="${cart[i].name}" />
                 <div id="product-cart-text">
                     <p>${cart[i].name}</p>
@@ -225,34 +280,42 @@ const loadCart = () => {
                     <i id="delete-cart-button" class="far fa-minus-square"></i>
                 </div>
             </a>
-        </div>`;
+        </div>`);
 
     }
 
-    document.getElementById("cart-total").innerHTML = "TOTAL: $" + totalPrice;
-}
+    $("#cart-total").text("TOTAL: $" + totalPrice);
 
-window.onload = () => {
-    getData();
-    loadProducts();
-    loadCart();
+    if (saveInLocalStorage) {
+        localStorage.setItem("cart", JSON.stringify(cart));
+    }
 
-    // EventListeners
-
-    document.getElementById("nextInput").addEventListener("click", () => nextInput());
-    document.getElementById("inputProduct").addEventListener("keyup", event => {
-        if (event.keyCode === 13) {
-            nextInput();
-        }
+    //// Cart Listener
+    $("#cart a.image.fit").click((e) => {
+        const productId = $(e.target).closest(".col-6").attr('id').replace("product-cart-", '');
+        deleteProductFromCart(parseInt(productId));
     });
 
-    document.getElementById("performPurchase").addEventListener("click", () => {
+    $("#performPurchase").click(() => {
         cart.splice(0, cart.length);
 
-        alert("Felicidades, a realizado su compra con exito!");
+        askWithModal("notification", "Felicidades, a realizado su compra con exito!");
 
-        loadCart();
-        localStorage.setItem("cart", JSON.stringify([]));
+        loadCart(true);
     });
 
-};
+}
+
+$(document).ready(() => {
+    getData();
+    loadProducts(false);
+    loadCart(false);
+
+    //// New Product Listener
+    $("#nextInput").click(() => nextInput());
+
+    $("#inputProduct").keyup(event => {
+        if (event.key === "Enter") nextInput();
+    });
+
+});

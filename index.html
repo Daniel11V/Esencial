@@ -119,8 +119,8 @@
 													alt="" /></a></div>
 									</div>
 								</div>
-								<a href="javascript:void(0)" class="button icon fa-file-alt" id="cart-total"
-									style="cursor: default;">TOTAL: $0</a>
+								<span class="button icon fa-file-alt" id="cart-total" style="cursor: default;">TOTAL:
+									$0</span>
 							</section>
 						</div>
 
@@ -141,6 +141,19 @@
 						</div>
 
 					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Modal -->
+		<div id="open-modal" class="modal-window" style="display:none;">
+			<div>
+				<h1></h1>
+				<input type="text" id="input-modal" class="button alt icon solid fa-question-circle"
+					placeholder="Escribir aqui...">
+				<div class="modal-btns">
+					<button id="modal-btn-cancel" class="button icon">Cancelar</button>
+					<button id="modal-btn-confirm" class="button icon">Confirmar</button>
 				</div>
 			</div>
 		</div>
@@ -203,13 +216,16 @@
 								<li><a href="#" class="icon brands fa-twitter"><span class="label">Twitter</span></a>
 								</li>
 								<li><a href="#" class="icon brands fa-facebook-f"><span
-											class="label">Facebook</span></a></li>
+											class="label">Facebook</span></a>
+								</li>
 								<li><a href="#" class="icon brands fa-instagram"><span
-											class="label">Instagram</span></a></li>
+											class="label">Instagram</span></a>
+								</li>
 								<li><a href="#" class="icon brands fa-dribbble"><span class="label">Dribbble</span></a>
 								</li>
 								<li><a href="#" class="icon brands fa-pinterest"><span
-											class="label">Pinterest</span></a></li>
+											class="label">Pinterest</span></a>
+								</li>
 							</ul>
 							<p>1234 Fictional Road<br />
 								Nashville, TN 00000<br />
@@ -234,7 +250,6 @@
 	</div>
 
 	<!-- Scripts -->
-
 	<script src="assets/js/jquery.min.js"></script>
 	<script src="assets/js/jquery.dropotron.min.js"></script>
 	<script src="assets/js/browser.min.js"></script>
