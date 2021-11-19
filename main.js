@@ -11,12 +11,30 @@ class Product {
 let products = [];
 let newProduct = [];
 
+let suggestions = [];
+
 let cart = [];
 
 let inputStep = 0;
 
 
-const getData = () => {
+const getDataFromAPI = () => {
+    const APIURL = "https://servicios.neunapp.com/api/tienda/productos/lista/";
+
+    $.get(APIURL, (respuesta, estado) => {
+        if (estado === "success") {
+            let newSuggestions = respuesta.results;
+
+            for (const product of newSuggestions) {
+                suggestions.push(new Product(product.name, product.price.replace('.', ''), product.visits, product.main_image))
+            }
+
+            loadProducts(false, suggestions, "suggestions");
+        }
+    });
+}
+
+const getDataFromLocalStorage = () => {
 
     // getProducts
     let productsFromStorage = JSON.parse(localStorage.getItem("products"));
@@ -46,38 +64,41 @@ const getData = () => {
 
 }
 
-const loadProducts = (saveInLocalStorage) => {
 
-    $("#products").empty();
+const loadProducts = (saveInLocalStorage, prodArray = products, nameArray = "products") => {
 
-    for (let i = 0; i < products.length; i++) {
+    $("#" + nameArray).empty();
 
-        $("#products").append(`
-        <div class="col-4 col-12-medium" id="product-${i}">
+    for (let i = 0; i < prodArray.length; i++) {
+
+        $("#" + nameArray).append(`
+        <div class="col-4 col-12-medium" id="${(nameArray === "products") ? "product" : "suggestion"}-${i}">
             <section class="box feature" style="border-radius: 10px;position:relative;">
                 <a href="javascript:void(0)" class="image featured product-img">
-                    <img src="${products[i].imgUrl}" alt="${products[i].name}" />
+                    <img src="${prodArray[i].imgUrl}" alt="${prodArray[i].name}" />
                 </a>
                 <div class="inner" style="display:flex;justify-content:space-between;">
                     <header>
-                        <h2>${products[i].name}</h2>
-                        <p>Stock: ${products[i].quantity}</p>
+                        <span class="product-title">${prodArray[i].name}</span>
+                        <p>Stock: ${prodArray[i].quantity}</p>
                     </header>
                     <div style="display: flex;flex-direction: column;align-items:end">
-                        <span style="font-size: 1.5em;line-height:1em">$${products[i].price}</span>
+                        <span style="font-size: 1.5em;line-height:1em">$${prodArray[i].price}</span>
                         <a href="javascript:void(0)"
-                class="fas fa-cart-plus cart-button"></a>
+                class="fas fa-${(nameArray === "products") ? "cart-plus cart" : "cloud-download-alt save"}-button action-button"></a>
                     </div>
                 </div>
-                <a href="javascript:void(0)"
-                class="icon fas fa-times-circle delete-button"></a>
+                ${(nameArray === "products") ?
+                `<a href="javascript:void(0)"
+                class="icon fas fa-times-circle delete-button"></a>`
+                : ""}
             </section>
         </div>`);
 
     }
 
     if (saveInLocalStorage) {
-        localStorage.setItem("products", JSON.stringify(products));
+        localStorage.setItem(nameArray, JSON.stringify(prodArray));
     }
 
     //// Product Card Listeners
@@ -86,11 +107,16 @@ const loadProducts = (saveInLocalStorage) => {
         deleteProduct(parseInt(productId));
     });
 
-    $(".cart-button").click((e) => {
-        const productId = $(e.target).closest(".col-12-medium").attr('id').replace("product-", '');
-        addProductToCart(parseInt(productId));
+    $(".action-button").click((e) => {
+        const productId = $(e.target).closest(".col-12-medium").attr('id');
+        if (productId.includes("product")) {
+            addProductToCart(parseInt(productId.replace("product-", '')));
+        } else {
+            addSuggestionToProducts(parseInt(productId.replace("suggestion-", '')));
+        }
     });
 }
+
 
 const nextInput = () => {
     newProduct.push($("#inputProduct").val());
@@ -175,7 +201,7 @@ const askWithModal = (type, description, notFadeIn, notFadeOut) => {
             if (!notFadeOut) $(".modal-window").fadeOut(200);
 
             if (type === "input") res(parseInt($("#input-modal").val()));
-            if (type === "confirm") res(1);
+            if (type === "confirm") { $("#modal-btn-confirm").off("focus"); res(1) };
         }
 
         $("#modal-btn-confirm").unbind().click((e) => confirmFunction());
@@ -219,6 +245,28 @@ const addProductToCart = async (productId) => {
             loadProducts(true);
             loadCart(true);
         }
+    }
+}
+
+
+const addSuggestionToProducts = async (productId) => {
+    if (await askWithModal("confirm", `Se añadira ${suggestions[productId].name} a la lista de tus productos.`, false, true)) {
+
+        // Añadir a Productos
+        const indextOfSuggestionInProducts = products.findIndex(product => product.name === suggestions[productId].name);
+        if (indextOfSuggestionInProducts === -1) {
+            products.push(new Product(
+                suggestions[productId].name,
+                suggestions[productId].price,
+                suggestions[productId].quantity,
+                suggestions[productId].imgUrl
+            ));
+            askWithModal("notification", `El producto se añadio a su lista y ya esta disponible para su compra.`, true);
+        } else {
+            askWithModal("notification", `El producto ya se encontraba en su lista.`, true);
+        }
+
+        loadProducts(true);
     }
 }
 
@@ -307,8 +355,9 @@ const loadCart = (saveInLocalStorage) => {
 }
 
 $(document).ready(() => {
-    getData();
-    loadProducts(false);
+    getDataFromAPI();
+    getDataFromLocalStorage();
+    loadProducts(false, products, "products");
     loadCart(false);
 
     //// New Product Listener

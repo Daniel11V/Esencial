@@ -23,14 +23,18 @@
 				<!-- Logo -->
 				<div id="logo">
 					<h1><a href="index.html">Esencial</a></h1>
-					<span>en la Tienda Online</span>
+					<span>Tienda Online</span>
 				</div>
 
 				<!-- Nav -->
 				<nav id="nav">
 					<ul>
-						<li class="current"><a href="index.html">Bienvenido</a></li>
-						<li>
+						<li class="current"><a href="#page-wrapper">Agregar</a></li>
+						<li><a href="#feature-wrapper">Tus Productos</a></li>
+						<li><a href="#suggestions-title">Recomendaciones</a></li>
+						<li><a href="#main-wrapper">Carrito</a></li>
+						<li><a href="#footer-wrapper">Contacto</a></li>
+						<!-- <li>
 							<a href="#">Dropdown</a>
 							<ul>
 								<li><a href="#">Lorem ipsum dolor</a></li>
@@ -46,10 +50,7 @@
 								</li>
 								<li><a href="#">Veroeros feugiat</a></li>
 							</ul>
-						</li>
-						<li><a href="left-sidebar.html">Left Sidebar</a></li>
-						<li><a href="right-sidebar.html">Right Sidebar</a></li>
-						<li><a href="no-sidebar.html">No Sidebar</a></li>
+						</li> -->
 					</ul>
 				</nav>
 
@@ -89,11 +90,14 @@
 
 		<!-- Features -->
 		<div id="features-wrapper">
-			<div class="container">
+			<div class="container products">
 				<!-- Products -->
-				<div class="row" id="products">
+				<p class="titleTypeProducts">Tus Productos</p>
+				<div class="row" id="products"></div>
 
-				</div>
+				<!-- Suggestions -->
+				<p class="titleTypeProducts" id="suggestions-title">Nuestras Recomendaciones</p>
+				<div class="row" id="suggestions"></div>
 			</div>
 		</div>
 
@@ -108,17 +112,8 @@
 							<section class="widget thumbnails">
 								<h3>Previsualizar Compra</h3>
 								<div class="grid">
-									<div class="row gtr-50" id="cart">
-										<!-- Cart Products -->
-										<div class="col-6"><a href="#" class="image fit"><img src="images/pic04.jpg"
-													alt="" /></a></div>
-										<div class="col-6"><a href="#" class="image fit"><img src="images/pic05.jpg"
-													alt="" /></a></div>
-										<div class="col-6"><a href="#" class="image fit"><img src="images/pic06.jpg"
-													alt="" /></a></div>
-										<div class="col-6"><a href="#" class="image fit"><img src="images/pic07.jpg"
-													alt="" /></a></div>
-									</div>
+									<!-- Cart Products -->
+									<div class="row gtr-50" id="cart"></div>
 								</div>
 								<span class="button icon fa-file-alt" id="cart-total" style="cursor: default;">TOTAL:
 									$0</span>
